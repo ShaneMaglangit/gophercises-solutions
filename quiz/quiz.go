@@ -2,48 +2,93 @@ package quiz
 
 import (
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"os"
+	"time"
 )
 
-func Quiz(answers []string) int {
+type problem struct {
+	question string
+	answer   string
+}
+
+func Quiz() {
+	csvFilename := flag.String("csv", "quiz/problems.csv", "a csv file in the format of 'question, answer")
+	timeLimit := flag.Int("timeLimit", 30, "duration of the quiz in seconds")
+	flag.Parse()
+
 	// Open the file
-	file, err := os.Open("C:\\Users\\shane\\Workspace\\gophercises\\quiz\\problems.csv")
+	file, err := os.Open(*csvFilename)
 	if err != nil {
-		fmt.Println("An error has been encountered ::", err)
-		return -1
+		exit(fmt.Sprintf("Failed to open the CSV file: %s\n", *csvFilename))
 	}
 
 	// Read the file
 	reader := csv.NewReader(file)
-	questions, _ := reader.ReadAll()
+	lines, err := reader.ReadAll()
+
+	if err != nil {
+		exit("Failed to parse the provided CSV file.")
+	}
 
 	// Initialize variables
-	corr := 0
+	problems := parseLines(lines)
+	score := 0
 
-	// Iterate through each question
-	for i, question := range questions[:10] {
-		// Show the question
-		fmt.Printf("%v: ", question[0])
+	// Create timer
+	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
 
-		// Get the input
-		var answer string
+	//go func() {
+	//	<-timer.C
+	//	endQuiz(score, len(problems))
+	//}()
 
-		if answers == nil {
-			_, _ = fmt.Scan(&answer)
-		} else {
-			answer = answers[i]
-		}
+	for i, problem := range problems {
+		// Display the question
+		fmt.Printf("Problem #%d: %s = ", i+1, problem.question)
 
-		// Check if answer is correct
-		if answer == question[1] {
-			corr++
+		// Create answer channel
+		answerCh := make(chan string)
+
+		// Goroutine function that accepts the answer from user
+		go func() {
+			var answer string
+			_, _ = fmt.Scanf("%s", &answer)
+
+			// Pass answer to channel
+			answerCh <- answer
+		}()
+
+		// Do something if we get something from the channel
+		select {
+		case <-timer.C:
+			fmt.Printf("\nTotal score %d out of %d", score, len(problems))
+			return
+		case answer := <-answerCh:
+			if answer == problem.answer {
+				score++
+			}
 		}
 	}
 
-	// Display the score
-	fmt.Printf("Correct Answers: %v, Wrong Answers: %v\n", corr, 10-corr)
-	_ = file.Close()
+	fmt.Printf("Total score %d out of %d", score, len(problems))
+}
 
-	return corr
+func parseLines(lines [][]string) []problem {
+	ret := make([]problem, len(lines))
+
+	for i, line := range lines {
+		ret[i] = problem{
+			question: line[0],
+			answer:   line[1],
+		}
+	}
+
+	return ret
+}
+
+func exit(msg string) {
+	fmt.Println(msg)
+	os.Exit(1)
 }

@@ -1,9 +1,8 @@
 package main
 
-import (
-	"gophercises/quiz"
-)
+// Quiz Main
+//func main() {
+//	quiz.Quiz()
+//}
 
-func main() {
-	quiz.Quiz(nil)
-}
+// URL Shortener Main
