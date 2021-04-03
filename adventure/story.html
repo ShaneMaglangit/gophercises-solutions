@@ -6,6 +6,16 @@
         <title>Choose your own adventure</title>
     </head>
     <body>
-        <h1>{{.Title}}</h1>
+        <main>
+            <h1>{{.Title}}</h1>
+            {{range .Story}}
+                <p>{{.}}</p>
+            {{end}}
+            <h3>What would you like to do next?</h3>
+            {{range .Options}}
+                <a href={{.Arc}}><p>{{.Text}}</p></a>
+            {{end}}
+            <a href="intro"><p>Return back to intro</p></a>
+        </main>
     </body>
 </html>
