@@ -1,10 +1,11 @@
 package main
 
-import "gophercises/linkparser"
+import "gophercises/sitemap"
 
 func main() {
 	//quiz.Quiz()
 	//urlshortener.Main()
 	//adventure.Adventure()
-	linkparser.LinkParser()
+	//linkparser.LinkParser()
+	sitemap.Sitemap()
 }
