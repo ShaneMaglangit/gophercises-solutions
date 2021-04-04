@@ -1,11 +1,12 @@
 package main
 
-import "gophercises/sitemap"
+import "gophercises/taskmanager"
 
 func main() {
 	//quiz.Quiz()
 	//urlshortener.Main()
 	//adventure.Adventure()
 	//linkparser.LinkParser()
-	sitemap.Sitemap()
+	//sitemap.Sitemap()
+	taskmanager.Main()
 }
