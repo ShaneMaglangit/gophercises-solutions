@@ -1,7 +1,5 @@
 package main
 
-import "gophercises/phone"
-
 func main() {
 	//quiz.Quiz()
 	//urlshortener.Main()
@@ -9,5 +7,5 @@ func main() {
 	//linkparser.LinkParser()
 	//sitemap.Sitemap()
 	//taskmanager.Main()
-	phone.Main()
+	//phone.Main()
 }
