@@ -92,6 +92,26 @@ func TestDeck_Contains(t *testing.T) {
 	}
 }
 
+func TestDeck_Shuffle(t *testing.T) {
+	tests := []struct {
+		name string
+		d    Deck
+	}{
+		{"Fresh Deck", New()},
+		{"Two Cards", Deck{{Heart, Ace}, {Spade, Three}, {Diamond, King}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dCopy := make(Deck, len(tt.d))
+			copy(dCopy, tt.d)
+			dCopy.Shuffle()
+			if reflect.DeepEqual(dCopy, tt.d) {
+				t.Errorf("Shuffle() order remains unchanged")
+			}
+		})
+	}
+}
+
 func TestNew(t *testing.T) {
 	deck := New()
 	// 13 ranks * 4 suits
@@ -106,7 +126,7 @@ func TestSort(t *testing.T) {
 		d      Deck
 		cFirst Card
 	}{
-		{"New() Sort", New(), Card{Spade, Ace}},
+		{"Fresh Deck", New(), Card{Spade, Ace}},
 		{"Two Cards", Deck{Card{Heart, Jack}, Card{Spade, Ace}}, Card{Spade, Ace}},
 	}
 	for _, tt := range tests {
@@ -118,35 +138,15 @@ func TestSort(t *testing.T) {
 	}
 }
 
-func TestDeck_Shuffle(t *testing.T) {
-	tests := []struct {
-		name string
-		d    Deck
-	}{
-		{"Fresh Deck", New()},
-		{"Fresh Deck", Deck{{Heart, Ace}, {Spade, Three}, {Diamond, King}}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			dCopy := make(Deck, len(tt.d))
-			copy(dCopy, tt.d)
-			dCopy.Shuffle()
-			if reflect.DeepEqual(dCopy, tt.d) {
-				t.Errorf("Shuffle() order remains unchanged")
-			}
-		})
-	}
-}
-
 func TestJokers(t *testing.T) {
 	tests := []struct {
 		name string
 		n    int
 		want int
 	}{
-		{"0 Jokers", 0, 0},
-		{"3 Jokers", 3, 3},
-		{"-1 Jokers", -1, 0},
+		{"Zero Jokers", 0, 0},
+		{"Three Jokers", 3, 3},
+		{"Negative Jokers", -1, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
