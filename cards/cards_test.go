@@ -29,17 +29,17 @@ func TestDeck_Add(t *testing.T) {
 		name string
 		deck Deck
 		card Card
-		want []Card
+		want Deck
 	}{
-		{"Empty deck", Deck{[]Card{}}, Card{Heart, Ace}, []Card{{Heart, Ace}}},
-		{"Add card", Deck{[]Card{{Heart, Ace}}}, Card{Spade, Three}, []Card{{Heart, Ace}, {Spade, Three}}},
-		{"No duplicate", Deck{[]Card{{Heart, Ace}}}, Card{Heart, Ace}, []Card{{Heart, Ace}}},
+		{"Empty deck", Deck{}, Card{Heart, Ace}, Deck{{Heart, Ace}}},
+		{"Add card", Deck{{Heart, Ace}}, Card{Spade, Three}, Deck{{Heart, Ace}, {Spade, Three}}},
+		{"No duplicate", Deck{{Heart, Ace}}, Card{Heart, Ace}, Deck{{Heart, Ace}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.deck.Add(tt.card)
-			if !reflect.DeepEqual(tt.deck.Cards, tt.want) {
-				t.Errorf("Add() got = %v, want %v", tt.deck.Cards, tt.want)
+			if !reflect.DeepEqual(tt.deck, tt.want) {
+				t.Errorf("Add() got = %v, want %v", tt.deck, tt.want)
 			}
 		})
 	}
@@ -47,27 +47,24 @@ func TestDeck_Add(t *testing.T) {
 
 func TestDeck_Delete(t *testing.T) {
 	tests := []struct {
-		name     string
-		deck     Deck
-		card     Card
-		want     []Card
-		hasError bool
+		name    string
+		deck    Deck
+		card    Card
+		want    Deck
+		success bool
 	}{
-		{"Empty deck", Deck{[]Card{}}, Card{Heart, Ace}, []Card{}, true},
-		{"Remove existing card", Deck{[]Card{{Heart, Ace}}}, Card{Heart, Ace}, []Card{}, false},
-		{"Remove non-existing card", Deck{[]Card{{Heart, Ace}}}, Card{Heart, Jack}, []Card{{Heart, Ace}}, true},
+		{"Empty deck", Deck{}, Card{Heart, Ace}, Deck{}, false},
+		{"Remove existing card", Deck{{Heart, Ace}}, Card{Heart, Ace}, Deck{}, true},
+		{"Remove non-existing card", Deck{{Heart, Ace}}, Card{Heart, Jack}, Deck{{Heart, Ace}}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.deck.Delete(tt.card)
-			if !reflect.DeepEqual(tt.deck.Cards, tt.want) {
-				t.Errorf("Delete() got = %v, want %v", tt.deck.Cards, tt.want)
+			success := tt.deck.Delete(tt.card)
+			if !reflect.DeepEqual(tt.deck, tt.want) {
+				t.Errorf("Delete() got = %v, want %v", tt.deck, tt.want)
 			}
-			if tt.hasError == (err == nil) {
-				t.Error("Delete() expected an error")
-			}
-			if tt.hasError != (err != nil) {
-				t.Errorf("Delete() unexpected error: %v", err)
+			if success != tt.success {
+				t.Errorf("Delete() success = %v, want %v", success, tt.success)
 			}
 		})
 	}
@@ -75,24 +72,20 @@ func TestDeck_Delete(t *testing.T) {
 
 func TestDeck_Contains(t *testing.T) {
 	tests := []struct {
-		name   string
-		deck   Deck
-		card   Card
-		want   int
-		exists bool
+		name string
+		deck Deck
+		card Card
+		want bool
 	}{
-		{"Empty deck", Deck{[]Card{}}, Card{Diamond, Ace}, -1, false},
-		{"Card exists", Deck{[]Card{{Diamond, Ace}}}, Card{Diamond, Ace}, 0, true},
-		{"Card does not exists", Deck{[]Card{{Diamond, King}}}, Card{Diamond, Ace}, -1, false},
+		{"Empty deck", Deck{}, Card{Diamond, Ace}, false},
+		{"Card exists", Deck{{Diamond, Ace}}, Card{Diamond, Ace}, true},
+		{"Card does not exists", Deck{{Diamond, King}}, Card{Diamond, Ace}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			i, exists := tt.deck.Contains(tt.card)
-			if i != tt.want {
-				t.Errorf("Contains() index = %v, want %v", i, tt.want)
-			}
-			if exists != tt.exists {
-				t.Errorf("Contains() exists = %v, want %v", exists, tt.exists)
+			exists := tt.deck.Contains(tt.card)
+			if exists != tt.want {
+				t.Errorf("Contains() exists = %v, want %v", exists, tt.want)
 			}
 		})
 	}
@@ -101,7 +94,26 @@ func TestDeck_Contains(t *testing.T) {
 func TestNew(t *testing.T) {
 	deck := New()
 	// 13 ranks * 4 suits
-	if n := len(deck.Cards); n != 13*4 {
-		t.Errorf("%d, want %d", n, 13*4)
+	if n := len(deck); n != 13*4 {
+		t.Errorf("New() got = %d, want %d", n, 13*4)
+	}
+}
+
+func TestSort(t *testing.T) {
+	tests := []struct {
+		name   string
+		d      Deck
+		cFirst Card
+	}{
+		{"New() Sort", New(), Card{Spade, Ace}},
+		{"Two Cards", Deck{Card{Heart, Jack}, Card{Spade, Ace}}, Card{Spade, Ace}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := DefaultSort(tt.d)
+			if s[0] != tt.cFirst {
+				t.Errorf("DefaultSort() first card = %v, want %v", s[0], tt.cFirst)
+			}
+		})
 	}
 }

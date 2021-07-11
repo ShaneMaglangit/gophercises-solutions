@@ -3,8 +3,8 @@
 package cards
 
 import (
-	"errors"
 	"fmt"
+	"sort"
 )
 
 // Suit is used to define the given suit of the card,
@@ -44,19 +44,19 @@ const (
 	King
 )
 
-// Used to iterate through the rank constants
+// Used to iterate through the rank constants.
 const (
 	minRank = Ace
 	maxRank = King
 )
 
-// Card is used to define the a card within a deck
+// Card is used to define the a card within a deck.
 type Card struct {
 	Suit
 	Rank
 }
 
-// Returns the textual representation of the card
+// Returns the textual representation of the card.
 func (c Card) String() string {
 	if c.Suit == Joker {
 		return c.Suit.String()
@@ -65,40 +65,51 @@ func (c Card) String() string {
 }
 
 // Deck is used as a collective struct for cards.
-type Deck struct {
-	Cards []Card
-}
+type Deck []Card
 
 // Add can be used to add a card to the deck.
 func (d *Deck) Add(c Card) {
-	if _, exists := d.Contains(c); !exists {
-		d.Cards = append(d.Cards, c)
+	if exists := d.Contains(c); !exists {
+		*d = append(*d, c)
 	}
 }
 
 // Delete can be used to remove a card from the deck.
-func (d *Deck) Delete(c Card) error {
-	if i, exists := d.Contains(c); exists {
-		d.Cards = append(d.Cards[:i], d.Cards[i+1:]...)
-		return nil
+func (d *Deck) Delete(c Card) bool {
+	if i := d.Find(c); i != -1 {
+		*d = append((*d)[:i], (*d)[i+1:]...)
+		return true
 	}
-	return errors.New("card not found")
+	return false
+}
+
+// Find gets the index of the card in the deck. Returns -1 if it doesn't exist.
+func (d Deck) Find(c Card) int {
+	for i, card := range d {
+		if c == card {
+			return i
+		}
+	}
+	return -1
 }
 
 // Contains checks if a card exists within a given deck.
-// Returns the index of the card in the list if it exists
-// Returns -1 if card does not exists
-func (d *Deck) Contains(c Card) (int, bool) {
-	for i, card := range d.Cards {
+func (d Deck) Contains(c Card) bool {
+	for _, card := range d {
 		if c == card {
-			return i, true
+			return true
 		}
 	}
-	return -1, false
+	return false
 }
 
-// New used to create a new deck of cards
-func New() Deck {
+// Shuffle sorts the cards in the deck in random order.
+func (d *Deck) Shuffle() {
+
+}
+
+// New used to create a new deck of cards.
+func New(opts ...func(Deck) Deck) Deck {
 	var deck Deck
 
 	// Create card for each suit
@@ -109,5 +120,37 @@ func New() Deck {
 		}
 	}
 
+	for _, opt := range opts {
+		deck = opt(deck)
+	}
+
 	return deck
+}
+
+// DefaultSort sorts the card in a deck based on their absolute rank value
+// calculated by suit * maxRank + rank
+func DefaultSort(d Deck) Deck {
+	sort.Slice(d, Less(d))
+	return d
+}
+
+// Sort is for more generalized sorting dictated by the less function parameter.
+func Sort(less func(d Deck) func(i, j int) bool) func(Deck) {
+	return func(d Deck) {
+		sort.Slice(d, Less(d))
+	}
+}
+
+// Less creates a less function that will be used for sorting.
+// It is used to check whether if card A is lower than card B.
+func Less(d Deck) func(i, j int) bool {
+	return func(i, j int) bool {
+		return absRank(d[i]) < absRank(d[j])
+	}
+}
+
+// absRank is used for returning the absolute rank of a given card.
+// This will be used as the comparison function for the cards.
+func absRank(c Card) int {
+	return int(c.Suit)*int(maxRank) + int(c.Rank)
 }
