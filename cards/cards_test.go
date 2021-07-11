@@ -175,3 +175,22 @@ func TestFilter(t *testing.T) {
 		}
 	}
 }
+
+func TestDecks(t *testing.T) {
+	tests := []struct {
+		name string
+		n    int
+		want int
+	}{
+		{"Zero Deck", 0, 0},
+		{"Two Decks", 2, 13 * 4 * 2},
+		{"Negative Deck", -1, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := len(New(Decks(tt.n))); got != tt.want {
+				t.Errorf("Decks() len = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
