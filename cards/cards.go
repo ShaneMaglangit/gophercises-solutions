@@ -3,6 +3,7 @@
 package cards
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 )
@@ -67,30 +68,24 @@ func (c Card) String() string {
 // Deck is used as a collective struct for cards.
 type Deck []Card
 
-// Add can be used to add a card to the deck.
-func (d *Deck) Add(c Card) {
+// Put can be used to add a card to the deck.
+func (d *Deck) Put(c Card) {
 	if exists := d.Contains(c); !exists {
 		*d = append(*d, c)
 	}
 }
 
-// Delete can be used to remove a card from the deck.
-func (d *Deck) Delete(c Card) bool {
-	if i := d.Find(c); i != -1 {
-		*d = append((*d)[:i], (*d)[i+1:]...)
-		return true
+// Draw can be used to get the top card from the deck.
+func (d *Deck) Draw() (Card, error) {
+	// Check if the deck contains any card
+	if len(*d) < 1 {
+		return Card{}, errors.New("deck is empty")
 	}
-	return false
-}
 
-// Find gets the index of the card in the deck. Returns -1 if it doesn't exist.
-func (d Deck) Find(c Card) int {
-	for i, card := range d {
-		if c == card {
-			return i
-		}
-	}
-	return -1
+	// Return the last card in the deck
+	c := (*d)[len(*d)-1]
+	*d = (*d)[:len(*d)-1]
+	return c, nil
 }
 
 // Contains checks if a card exists within a given deck.
@@ -116,10 +111,11 @@ func New(opts ...func(Deck) Deck) Deck {
 	for _, suit := range suits {
 		// Create card for each rank
 		for rank := minRank; rank <= maxRank; rank++ {
-			deck.Add(Card{Suit: suit, Rank: rank})
+			deck.Put(Card{Suit: suit, Rank: rank})
 		}
 	}
 
+	// Run functional options
 	for _, opt := range opts {
 		deck = opt(deck)
 	}

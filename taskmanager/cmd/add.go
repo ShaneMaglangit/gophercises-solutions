@@ -15,7 +15,7 @@ func init() {
 
 var addCmd = &cobra.Command{
 	Use:   "add [task]",
-	Short: "Add a new task to TODO list",
+	Short: "Put a new task to TODO list",
 	Run: func(cmd *cobra.Command, args []string) {
 		task := strings.Join(args, " ")
 
@@ -23,9 +23,11 @@ var addCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer db.Close()
+		defer func(db *bolt.DB) {
+			_ = db.Close()
+		}(db)
 
-		db.Update(func(tx *bolt.Tx) error {
+		_ = db.Update(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte("TODO"))
 			id, _ := b.NextSequence()
 			err := b.Put(itob(int(id)), []byte(task))
