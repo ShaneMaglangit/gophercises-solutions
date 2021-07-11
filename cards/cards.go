@@ -5,7 +5,9 @@ package cards
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"sort"
+	"time"
 )
 
 // Suit is used to define the given suit of the card,
@@ -100,12 +102,13 @@ func (d Deck) Contains(c Card) bool {
 
 // Shuffle sorts the cards in the deck in random order.
 func (d *Deck) Shuffle() {
-
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+	r.Shuffle(len(*d), func(i, j int) { (*d)[i], (*d)[j] = (*d)[j], (*d)[i] })
 }
 
 // New used to create a new deck of cards.
 func New(opts ...func(Deck) Deck) Deck {
-	var deck Deck
+	deck := Deck{}
 
 	// Create card for each suit
 	for _, suit := range suits {
@@ -149,4 +152,18 @@ func Less(d Deck) func(i, j int) bool {
 // This will be used as the comparison function for the cards.
 func absRank(c Card) int {
 	return int(c.Suit)*int(maxRank) + int(c.Rank)
+}
+
+// Jokers is used to add n jokers on the deck of card.
+// Each joker card will have a rank based on their order of creation.
+func Jokers(n int) func(Deck) Deck {
+	return func(d Deck) Deck {
+		for i := 0; i < n; i++ {
+			d = append(d, Card{
+				Rank: Rank(i),
+				Suit: Joker,
+			})
+		}
+		return d
+	}
 }

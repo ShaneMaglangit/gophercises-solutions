@@ -117,3 +117,49 @@ func TestSort(t *testing.T) {
 		})
 	}
 }
+
+func TestDeck_Shuffle(t *testing.T) {
+	tests := []struct {
+		name string
+		d    Deck
+	}{
+		{"Fresh Deck", New()},
+		{"Fresh Deck", Deck{{Heart, Ace}, {Spade, Three}, {Diamond, King}}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dCopy := make(Deck, len(tt.d))
+			copy(dCopy, tt.d)
+			dCopy.Shuffle()
+			if reflect.DeepEqual(dCopy, tt.d) {
+				t.Errorf("Shuffle() order remains unchanged")
+			}
+		})
+	}
+}
+
+func TestJokers(t *testing.T) {
+	tests := []struct {
+		name string
+		n    int
+		want int
+	}{
+		{"0 Jokers", 0, 0},
+		{"3 Jokers", 3, 3},
+		{"-1 Jokers", -1, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := New(Jokers(tt.n))
+			n := 0
+			for _, c := range d {
+				if c.Suit == Joker {
+					n++
+				}
+			}
+			if n != tt.want {
+				t.Errorf("Jokers() = %v, want %v", n, tt.want)
+			}
+		})
+	}
+}
