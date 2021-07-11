@@ -53,7 +53,7 @@ func TestDeck_Draw(t *testing.T) {
 		hasError bool
 	}{
 		{"Fresh Deck", New(), Card{Heart, King}, false},
-		{"2 Cards", Deck{{Heart, King}, {Diamond, Ace}}, Card{Diamond, Ace}, false},
+		{"Two Cards", Deck{{Heart, King}, {Diamond, Ace}}, Card{Diamond, Ace}, false},
 		{"Empty Deck", Deck{}, Card{}, true},
 	}
 	for _, tt := range tests {
