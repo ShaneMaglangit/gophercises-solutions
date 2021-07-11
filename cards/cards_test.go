@@ -163,3 +163,15 @@ func TestJokers(t *testing.T) {
 		})
 	}
 }
+
+func TestFilter(t *testing.T) {
+	filter := func(card Card) bool {
+		return card.Rank == Ace
+	}
+	d := New(Filter(filter))
+	for _, c := range d {
+		if c.Rank == Ace {
+			t.Errorf("expected ace to be filtered out")
+		}
+	}
+}
